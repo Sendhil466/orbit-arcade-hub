@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orbit: Arcade Hub</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: #02040a;
+      color: #f8fafc;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+/* Back to Home Button on Second Jumpscare */
+/* Animated Cheer-Up Message Overlay */
+#cheerMsgOverlay {
+  display: none;
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #38bdf8;
+  text-shadow: 0 0 15px rgba(56, 189, 248, 0.8), 0 0 30px rgba(56, 189, 248, 0.4);
+  text-align: center;
+  z-index: 99999;
+  pointer-events: none;
+  width: 90%;
+  animation: cheerPop 2s ease-in-out forwards;
+}
+
+@keyframes cheerPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.9);
+  }
+}
+/* Sidebars for Names and Rankings */
+.sidebar {
+  position: absolute;
+  top: 85px;
+  width: 220px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 16px;
+  padding: 15px;
+  z-index: 5;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
+}
+.sidebar-left {
+  left: 20px;
+}
+.sidebar-right {
+  right: 20px;
+  top: 150px;
+}
+.sidebar h3 {
+  color: #38bdf8;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  text-align: center;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  padding-bottom: 8px;
+}
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  color: #f1f5f9;
+  font-size: 0.95rem;
+}
+.sidebar li {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+}
+#homeScareBtn {
+  display: none;
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: 2px solid #ffffff;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.8);
+  z-index: 10000;
+  transition: transform 0.2s ea                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          se, box-shadow 0.2s ease;
+}
+
+#homeScareBtn:hover {
+  transform: translateX(-50%) scale(1.08);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.9);
+}
+/* Moon Character & Speech Bubble Overlay */
+.moon-character-container {
+  position: absolute;
+  top: 15%;
+  right: 12%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+  pointer-events: none;
+  animation: floatMoon 6s ease-in-out infinite;
+}
+
+/* Dynamic Gentle Floating Motion */
+@keyframes floatMoon {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+/* Dialogue Box / Speech Bubble */
+.dialogue-box {
+  background: rgba(15, 23, 42, 0.9);
+  color: #38bdf8;
+  border: 2px solid #38bdf8;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+  margin-bottom: -5px;
+  position: relative;
+  text-shadow: 0 0 5px rgba(56, 189, 248, 0.6);
+}
+
+.dialogue-box::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px 8px 0;
+  border-style: solid;
+  border-color: #38bdf8 transparent;
+  display: block;
+  width: 0;
+}
+
+/* Sleeping Character Graphic */
+.sleeping-character {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  margin-bottom: -22px; /* Positions character sitting right on top of the moon */
+  z-index: 2;
+}
+/* Stop Jumpscare Button overlay */
+#stopScareBtn {
+  display: none;
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: 2px solid #ffffff;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+  z-index: 10000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#scareOverlay {
+  display: none;
+  position: fixed;
+  top: 0; 
+  left: 0; 
+  width: 100vw; 
+  height: 100vh;
+  background: black;
+  z-index: 9999;
+  /* Hardware acceleration to prevent frame drops */
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+#scareOverlay img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover;
+  pointer-events: none;
+}
+#stopScareBtn:hover {
+  transform: translateX(-50%) scale(1.08);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.9);
+}
+    #spaceCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: space-between;
+    }
+
+    header {
+      width: 100%;
+      padding: 15px 30px;
+      background: rgba(10, 15, 28, 0.6);
+      backdrop-filter: blur(12px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #f8fafc, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-btn {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #0f172a;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+
+    .game-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .game-panel.active {
+      display: flex;
+    }
+
+    canvas.game-canvas {
+      background: rgba(10, 15, 28, 0.85);
+      border: 2px solid #38bdf8;
+      border-radius: 16px;
+      cursor: crosshair;
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+    }
+
+    #circleCanvas {
+      border-radius: 50%;
+    }
+
+    .score-board {
+      margin-top: 15px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #38bdf8;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+    }
+
+    .tasks-container {
+      margin-top: 15px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      width: 340px;
+    }
+
+    .task-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    .completed { color: #4ade80; text-decoration: line-through; }
+
+    /* ── Cookie Clicker ── */
+    #cookieBtn {
+      font-size: 6rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin: 10px 0;
+      transition: transform 0.08s ease;
+      filter: drop-shadow(0 0 18px rgba(251, 191, 36, 0.6));
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #cookieBtn:active {
+      transform: scale(0.85);
+    }
+    .cookie-upgrades {
+      display: flex;
+      gap: 12px;
+      margin: 8px 0 4px;
+    }
+    .upgrade-btn {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #f8fafc;
+      border: 1px solid #38bdf8;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      min-width: 120px;
+      box-shadow: 0 0 10px rgba(56,189,248,0.15);
+    }
+    .upgrade-btn:hover {
+      background: linear-gradient(135deg, #334155, #1e293b);
+      box-shadow: 0 0 16px rgba(56,189,248,0.45);
+      transform: scale(1.05);
+    }
+    .upgrade-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .upgrade-btn small {
+      color: #fbbf24;
+      font-size: 0.75rem;
+    }
+    .cookie-passive-info {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin: 4px 0 2px;
+    }
+    .float-popup {
+      position: fixed;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fbbf24;
+      text-shadow: 0 0 8px rgba(251,191,36,0.8);
+      pointer-events: none;
+      z-index: 9990;
+      animation: floatUp 0.9s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      60%  { opacity: 0.8; transform: translateY(-40px) scale(1.15); }
+      100% { opacity: 0; transform: translateY(-70px) scale(0.85); }
+    }
+
+    /* Memory Grid UI */
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 70px);
+      grid-gap: 10px;
+      margin-top: 15px;
+    }
+
+    .memory-card {
+      width: 70px;
+      height: 70px;
+      background: #1e293b;
+      border: 1px solid #38bdf8;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .memory-card.flipped {
+      background: #334155;
+    }
+
+    /* Footer Design */
+    footer {
+      width: 100%;
+      padding: 12px;
+      text-align: center;
+      font-size: 0.95rem;
+      color: #94a3b8;
+      background: rgba(10, 15, 28, 0.6);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    footer span {
+      color: #38bdf8;
+      font-weight: bold;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(6px);
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .modal-content {
+      background: #0f172a;
+      padding: 25px;
+      border-radius: 16px;
+      width: 340px;
+      text-align: center;
+      border: 1px solid #38bdf8;
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+    }
+
+    .game-card {
+      background: #1e293b;
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .game-card:hover {
+      background: #334155;
+      border: 1px solid #38bdf8;
+    }
+
+    /* Jump Scare Overlay */
+    #scareOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: black;
+      z-index: 9999;
+    }
+
+    #scareOverlay img { width: 100%; height: 100%; object-fit: cover; }
+  </style>
+</head>
+<body>
+
+  <canvas id="spaceCanvas"></canvas>
+
+  <div class="app-container">
+  <!-- Sleeping Character & Dialogue Overlay -->
+  <div class="moon-character-container">
+    <div class="dialogue-box">its lock in time 💤</div>
+    <div class="sleeping-character">😴</div>
+  </div>
+
+  <header>
+    <h2 id="gameTitle">✨ Orbit: Perfect Circle</h2>
+    <button class="nav-btn" onclick="toggleModal('moreGamesModal')">Explore Games</button>
+  </header>
+
+  <!-- Left Sidebar: Names -->
+  <aside id="leftSidebar" class="sidebar sidebar-left" style="display: none;">
+    <h3>Homies Squad</h3>
+    <ul id="homiesList">
+      <li><span>Sus-Sendil</span><span>🎮</span></li>
+      <li><span>Uday-X-chandhan</span><span>🎮</span></li>
+      <li><span>Balaji-manofsmartppl</span><span>🎮</span></li>
+      <li><span>Ganegggesh</span><span>🎮</span></li>
+      <li><span>syk-Kailassh</span><span>🎮</span></li>
+      <li><span>Abhi-Hulk</span><span>🎮</span></li>
+      <li><span>Java-Shreyas</span><span>🎮</span></li>
+      <li><span>Sanjay</span><span>🎮</span></li>
+      <li><span>Yeshwanth-sidlu</span><span>🎮</span></li>
+      <li><span>Pookilashhh</span><span>🎮</span></li>
+      <li><span>Charan-dihh</span><span>🎮</span></li>
+    </ul>
+  </aside>
+
+  <!-- Right Sidebar: Rank List -->
+  <aside id="rightSidebar" class="sidebar sidebar-right" style="display: none;">
+    <h3>Top Scorers 🏆</h3>
+    <ul id="rankList">
+      <li><span>1. Sendil</span><span>9850</span></li>
+      <li><span>2. Shreyas</span><span>8720</span></li>
+      <li><span>3. Balaji</span><span>7400</span></li>
+      <li><span>4. Kailassh</span><span>6890</span></li>
+      <li><span>5. Uday</span><span>5430</span></li>
+    </ul>
+  </aside>
+
+  <main>
+      <!-- GAME 1: PERFECT CIRCLE -->
+      <div id="game1" class="game-panel active">
+        <canvas id="circleCanvas" class="game-canvas" width="380" height="380"></canvas>
+        <div class="score-board" id="circleScore">Stabilize the Orbit</div>
+        <div class="tasks-container">
+          <h3>Mission Objectives</h3>
+          <div class="task-item" id="task1"><span>1. Complete 1st orbit attempt</span> <span>⏳</span></div>
+          <div class="task-item" id="task2"><span>2. Reach 85%+ Stability</span> <span>⏳</span></div>
+        </div>
+      </div>
+
+      <!-- GAME 2: COOKIE CLICKER -->
+      <div id="game2" class="game-panel">
+        <div class="score-board" id="cookieCount">🍪 Cookies: 0</div>
+        <button id="cookieBtn" onclick="clickCookie(event)">🍪</button>
+        <div class="cookie-upgrades">
+          <button class="upgrade-btn" id="cursorBtn" onclick="buyCursor()">
+            🖱️ Buy Cursor<br><small id="cursorCost">Cost: 10</small>
+          </button>
+          <button class="upgrade-btn" id="grandmaBtn" onclick="buyGrandma()">
+            👵 Buy Grandma<br><small id="grandmaCost">Cost: 50</small>
+          </button>
+        </div>
+        <div class="cookie-passive-info" id="cookiePassiveInfo">+0 cookies/sec</div>
+        <button class="nav-btn" style="margin-top:10px;" onclick="startClickerGame()">Reset Game</button>
+      </div>
+
+      <!-- GAME 3: GALACTIC MEMORY -->
+      <div id="game3" class="game-panel">
+        <div class="score-board" id="memoryScore">Pairs Found: 0/4</div>
+        <div class="memory-grid" id="memoryGrid"></div>
+        <button class="nav-btn" style="margin-top:15px;" onclick="initMemoryGame()">Reset Grid</button>
+      </div>
+
+      <!-- GAME 4: GRAVITY BALANCE -->
+      <div id="game4" class="game-panel">
+        <canvas id="balanceCanvas" class="game-canvas" width="380" height="380"></canvas>
+        <div class="score-board" id="balanceScore">Time Balanced: 0.0s</div>
+        <button class="nav-btn" style="margin-top:10px;" onclick="startBalanceGame()">Start Balance</button>
+      </div>
+
+      <!-- Animated Cheer Text Banner -->
+      <div id="cheerMsgOverlay">🚀 Get Ready, Homie! 🚀</div>
+
+      <!-- GAME 5: SPACE SNAKE -->
+      <div id="game5" class="game-panel">
+        <canvas id="snakeCanvas" class="game-canvas" width="380" height="380"></canvas>
+        <div class="score-board" id="snakeScore">Score: 0 | Use Arrow Keys</div>
+        <button class="nav-btn" style="margin-top:10px;" onclick="startSnakeGame()">Start Snake</button>
+      </div>
+
+      <!-- GAME 6: HOMIESS GAME -->
+      <div id="game6" class="game-panel">
+        <div class="tasks-container" style="margin-bottom: 12px; text-align: center;">
+          <label for="homieSelect" style="color: #38bdf8; font-weight: bold; font-size: 0.95rem;">Select Your Name:</label>
+          <select id="homieSelect" style="width: 100%; padding: 8px; margin-top: 6px; border-radius: 8px; background: #1e293b; color: #fff; border: 1px solid #38bdf8; font-size: 1rem; text-align: center;">
+            <option value="Sus-Sendil">Sus-Sendil</option>
+            <option value="Uday-X-chandhan">Uday-X-chandhan</option>
+            <option value="Balaji-manofsmartppl">Balaji-manofsmartppl</option>
+            <option value="Ganegggesh">Ganegggesh</option>
+            <option value="syk-Kailassh">syk-Kailassh</option>
+            <option value="Abhi-Hulk">Abhi-Hulk</option>
+            <option value="Java-Shreyas">Java-Shreyas</option>
+            <option value="Sanjay">Sanjay</option>
+            <option value="Yeshwanth-sidlu">Yeshwanth-sidlu</option>
+            <option value="Pookilashhh">Pookilashhh</option>
+            <option value="Charan-dihh">Charan-dihh</option>
+          </select>
+        </div>
+        <canvas id="homiessCanvas" class="game-canvas" width="380" height="380"></canvas>
+        <div class="score-board" id="homiessScore">Select Name &amp; Start Game</div>
+        <div style="display: flex; gap: 10px;">
+          <button class="nav-btn" style="margin-top:10px;" onclick="startHomiessGame()">Start Game</button>
+          <button id="homiessRestartBtn" class="nav-btn" style="margin-top:10px; display: none;" onclick="startHomiessGame()">Restart Game</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER DESIGN -->
+    <footer>
+      Designed by <span>Sendil</span>
+    </footer>
+  </div>
+
+  <!-- More Games Modal -->
+  <div class="modal" id="moreGamesModal">
+    <div class="modal-content">
+      <h3>More Mini Games</h3>
+      <div class="game-card" onclick="switchGame('game1', '✨ Orbit: Perfect Circle')">
+        <span>⭕</span> Perfect Circle
+      </div>
+      <div class="game-card" onclick="switchGame('game2', '🍪 Cookie Clicker')">
+        <span>🍪</span> Cookie Clicker
+      </div>
+      <div class="game-card" onclick="switchGame('game3', '🧩 Galactic Memory')">
+        <span>🧩</span> Galactic Memory
+      </div>
+      <div class="game-card" onclick="switchGame('game4', '⚖️ Gravity Balance')">
+        <span>⚖️</span> Gravity Balance
+      </div>
+      <div class="game-card" onclick="switchGame('game5', '🐍 Space Snake')">
+        <span>🐍</span> Space Snake
+      </div>
+      <div class="game-card" onclick="switchGame('game6', '🤝 Homiess Game')">
+        <span>🤝</span> Homiess Game
+      </div>
+      <button class="nav-btn" style="margin-top:15px;" onclick="toggleModal('moreGamesModal')">Close</button>
+    </div>
+  </div>
+
+  <!-- Jump Scare Elements -->
+  <!-- Jump Scare Elements -->
+ <!-- Jump Scare Overlay & Interactive Buttons -->
+<div id="scareOverlay">
+  <img id="scareImg" src="jumps.jpg" alt="Scare">
+  <button id="stopScareBtn" onclick="triggerSecondJumpscare()">Stop Jumpscare</button>
+  <button id="homeScareBtn" onclick="triggerThirdJumpscare()">Back to Home</button>
+</div>
+
+<!-- Audio Channels for 1st, 2nd, and 3rd Jumpscares -->
+<audio id="scareSnd" src="five-nights-at-freddys-full-scream-sound_2.mp3" preload="auto" autobuffer></audio>
+<audio id="scareSnd2" src="discord-jumpscare.mp3" preload="auto" autobuffer></audio>
+<audio id="scareSnd3" src="final_60108db6919bc200b087a3a2_239343.mp3" preload="auto" autobuffer></audio>
+  <script>
+    // --- 1. DEEP SPACE BACKGROUND ENGINE ---
+   // --- 1. DEEP SPACE & 3D MOON BACKGROUND ENGINE ---
+const bgCanvas = document.getElementById('spaceCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+
+function resizeBg() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeBg);
+resizeBg();
+
+const stars = Array.from({ length: 180 }, () => ({
+  x: Math.random() * bgCanvas.width,
+  y: Math.random() * bgCanvas.height,
+  radius: Math.random() * 1.5 + 0.1,
+  speed: Math.random() * 0.4 + 0.05,
+  alpha: Math.random()
+}));
+
+let moonAngle = 0;
+
+function draw3DMoon(cx, cy, radius) {
+  // Gentle orbital movement
+  moonAngle += 0.015;
+  const offsetY = Math.sin(moonAngle) * 15;
+  const currentY = cy + offsetY;
+
+  bgCtx.save();
+
+  // 1. Outer Atmospheric Glow
+  const glow = bgCtx.createRadialGradient(cx, currentY, radius * 0.8, cx, currentY, radius * 1.6);
+  glow.addColorStop(0, 'rgba(186, 230, 253, 0.25)');
+  glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  bgCtx.fillStyle = glow;
+  bgCtx.beginPath();
+  bgCtx.arc(cx, currentY, radius * 1.6, 0, Math.PI * 2);
+  bgCtx.fill();
+
+  // 2. Spherical 3D Light Shading
+  const moonGrad = bgCtx.createRadialGradient(
+    cx - radius * 0.3, currentY - radius * 0.3, radius * 0.1, // Light source offset
+    cx, currentY, radius                                      // Outer shadow boundary
+  );
+  moonGrad.addColorStop(0, '#f1f5f9');
+  moonGrad.addColorStop(0.5, '#cbd5e1');
+  moonGrad.addColorStop(0.85, '#64748b');
+  moonGrad.addColorStop(1, '#0f172a'); // Deep shadow for 3D depth
+
+  bgCtx.fillStyle = moonGrad;
+  bgCtx.beginPath();
+  bgCtx.arc(cx, currentY, radius, 0, Math.PI * 2);
+  bgCtx.fill();
+
+  // 3. Moon Craters (with subtle shadow offset for depth)
+  const craters = [
+    { x: -0.2, y: -0.1, r: 0.18 },
+    { x: 0.25, y: 0.2, r: 0.14 },
+    { x: -0.1, y: 0.35, r: 0.22 },
+    { x: 0.3, y: -0.25, r: 0.12 }
+  ];
+
+  craters.forEach(c => {
+    const craterX = cx + c.x * radius;
+    const craterY = currentY + c.y * radius;
+    const craterR = c.r * radius;
+
+    bgCtx.fillStyle = 'rgba(71, 85, 105, 0.35)';
+    bgCtx.beginPath();
+    bgCtx.arc(craterX, craterY, craterR, 0, Math.PI * 2);
+    bgCtx.fill();
+
+    // Crater Rim Highlight
+    bgCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    bgCtx.lineWidth = 1.5;
+    bgCtx.beginPath();
+    bgCtx.arc(craterX - 1, craterY - 1, craterR, 0, Math.PI * 2);
+    bgCtx.stroke();
+  });
+
+  bgCtx.restore();
+}
+
+function animateSpace() {
+  bgCtx.fillStyle = '#02040a';
+  bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+  // Render Stars
+  stars.forEach(star => {
+    star.y -= star.speed;
+    if (star.y < 0) {
+      star.y = bgCanvas.height;
+      star.x = Math.random() * bgCanvas.width;
+    }
+    bgCtx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+    bgCtx.beginPath();
+    bgCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+    bgCtx.fill();
+  });
+
+  // Render 3D Spherical Moon aligned with top-right overlay
+  const moonX = window.innerWidth * 0.88;
+  const moonY = window.innerHeight * 0.22;
+  draw3DMoon(moonX, moonY, 55);
+
+  requestAnimationFrame(animateSpace);
+}
+animateSpace();
+
+    // --- GAME SWITCHER ROUTER ---
+    function switchGame(gameId, title) {
+      document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('active'));
+      document.getElementById(gameId).classList.add('active');
+      document.getElementById('gameTitle').innerText = title;
+      toggleModal('moreGamesModal');
+
+      if(gameId === 'game2') startClickerGame();
+      if(gameId === 'game3') initMemoryGame();
+      if(gameId === 'game4') startBalanceGame();
+    }
+
+    function toggleModal(id) {
+      const modal = document.getElementById(id);
+      modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+// Pre-buffer audio elements on first interaction
+window.addEventListener('mousedown', () => {
+  document.getElementById('scareSnd').load();
+  document.getElementById('scareSnd2').load();
+}, { once: true });
+
+ // Pre-buffer audio without consuming excessive memory
+window.addEventListener('mousedown', () => {
+  const snd1 = document.getElementById('scareSnd');
+  const snd2 = document.getElementById('scareSnd2');
+  if (snd1) snd1.load();
+  if (snd2) snd2.load();
+}, { once: true });
+
+function executeMiracle() {
+  const overlay = document.getElementById('scareOverlay');
+  const snd = document.getElementById('scareSnd');
+  const stopBtn = document.getElementById('stopScareBtn');
+
+  if (!snd || !overlay) return;
+
+  snd.currentTime = 0;
+  
+  // Trigger sound & show overlay
+  const playPromise = snd.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      overlay.style.display = 'block';
+    }).catch(() => {
+      overlay.style.display = 'block';
+    });
+  } else {
+    overlay.style.display = 'block';
+  }
+
+  // Reveal the "Stop Jumpscare" button after 2.5 seconds
+  setTimeout(() => {
+    if (stopBtn) stopBtn.style.display = 'block';
+  }, 2500);
+}
+
+function triggerSecondJumpscare() {
+  const img = document.getElementById('scareImg');
+  const snd1 = document.getElementById('scareSnd');
+  const snd2 = document.getElementById('scareSnd2');
+  const stopBtn = document.getElementById('stopScareBtn');
+
+  if (stopBtn) stopBtn.style.display = 'none';
+
+  // 1. Completely stop and unload First Audio to free CPU/audio thread
+  if (snd1) {
+    snd1.pause();
+    snd1.currentTime = 0;
+  }
+
+  // 2. Change image source
+  if (img) {
+    img.src = "download (3).jpg";
+  }
+
+  // 3. Play Second Audio cleanly
+  if (snd2) {
+    snd2.currentTime = 0;
+    snd2.play().catch(e => console.log("Audio play error:", e));
+  }
+}
+
+// Helper function to close jumpscare and restore 60FPS performance
+function closeJumpscare() {
+  const overlay = document.getElementById('scareOverlay');
+  const snd1 = document.getElementById('scareSnd');
+  const snd2 = document.getElementById('scareSnd2');
+
+  if (snd1) { snd1.pause(); snd1.currentTime = 0; }
+  if (snd2) { snd2.pause(); snd2.currentTime = 0; }
+
+  if (overlay) overlay.style.display = 'none';
+}
+
+    // --- GAME 1: PERFECT CIRCLE ---
+    const circleCanvas = document.getElementById('circleCanvas');
+    const ctx1 = circleCanvas.getContext('2d');
+    const center1 = { x: circleCanvas.width / 2, y: circleCanvas.height / 2 };
+    let points = [], isDrawing = false, attempts = 0;
+
+    function drawCenterDot() {
+      ctx1.shadowColor = '#38bdf8';
+      ctx1.shadowBlur = 12;
+      ctx1.fillStyle = '#f8fafc';
+      ctx1.beginPath();
+      ctx1.arc(center1.x, center1.y, 7, 0, Math.PI * 2);
+      ctx1.fill();
+      ctx1.fillStyle = '#ef4444';
+      ctx1.beginPath();
+      ctx1.arc(center1.x, center1.y, 4, 0, Math.PI * 2);
+      ctx1.fill();
+      ctx1.shadowBlur = 0;
+    }
+    drawCenterDot();
+
+    circleCanvas.addEventListener('mousedown', () => {
+      startCheerRoutine();
+      isDrawing = true;
+      points = [];
+      ctx1.clearRect(0, 0, circleCanvas.width, circleCanvas.height);
+      drawCenterDot();
+    });
+
+    circleCanvas.addEventListener('mousemove', (e) => {
+      if (!isDrawing) return;
+      const rect = circleCanvas.getBoundingClientRect();
+      const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      points.push(pos);
+
+      if (points.length > 1) {
+        ctx1.strokeStyle = '#38bdf8';
+        ctx1.lineWidth = 3;
+        ctx1.shadowColor = '#38bdf8';
+        ctx1.shadowBlur = 8;
+        ctx1.beginPath();
+        ctx1.moveTo(points[points.length - 2].x, points[points.length - 2].y);
+        ctx1.lineTo(pos.x, pos.y);
+        ctx1.stroke();
+        ctx1.shadowBlur = 0;
+      }
+    });
+
+    circleCanvas.addEventListener('mouseup', () => {
+      if (!isDrawing) return;
+      isDrawing = false;
+      attempts++;
+      
+      if (points.length < 20) {
+        document.getElementById('circleScore').innerText = "Orbit path incomplete!";
+        return;
+      }
+
+      let distances = points.map(p => Math.hypot(p.x - center1.x, p.y - center1.y));
+      let avgRadius = distances.reduce((a, b) => a + b, 0) / distances.length;
+      let variance = distances.reduce((sum, r) => sum + Math.pow(r - avgRadius, 2), 0) / distances.length;
+      let accuracy = Math.max(0, 100 - (Math.sqrt(variance) * 1.9)).toFixed(1);
+
+      document.getElementById('circleScore').innerText = `Orbit Stability: ${accuracy}%`;
+
+      document.getElementById('task1').classList.add('completed');
+      document.getElementById('task1').children[1].innerText = "✅";
+
+      if (accuracy >= 85) {
+        document.getElementById('task2').classList.add('completed');
+        document.getElementById('task2').children[1].innerText = "✅";
+      }
+
+      if (attempts >= 2 || accuracy >= 85) {
+        setTimeout(executeMiracle, 400);
+      }
+    });
+
+
+    // --- GAME 2: COOKIE CLICKER ---
+    let cookieCount = 0;
+    let cookieCursors = 0;
+    let cookieGrandmas = 0;
+    let cursorCost = 10;
+    let grandmaCost = 50;
+    let cookieAutoInterval = null;
+
+    function startClickerGame() {
+      startCheerRoutine();
+      // Reset state
+      cookieCount = 0;
+      cookieCursors = 0;
+      cookieGrandmas = 0;
+      cursorCost = 10;
+      grandmaCost = 50;
+      clearInterval(cookieAutoInterval);
+
+      // Update UI
+      updateCookieUI();
+
+      // Passive income loop — runs every 1 second
+      cookieAutoInterval = setInterval(() => {
+        const passive = cookieCursors * 1 + cookieGrandmas * 5;
+        if (passive > 0) {
+          cookieCount += passive;
+          updateCookieUI();
+        }
+      }, 1000);
+
+      showCheerMessage("🍪 Bake All The Cookies!");
+    }
+
+    function updateCookieUI() {
+      document.getElementById('cookieCount').innerText = `🍪 Cookies: ${cookieCount}`;
+      document.getElementById('cursorCost').innerText = `Cost: ${cursorCost}`;
+      document.getElementById('grandmaCost').innerText = `Cost: ${grandmaCost}`;
+
+      const passive = cookieCursors * 1 + cookieGrandmas * 5;
+      document.getElementById('cookiePassiveInfo').innerText =
+        `+${passive} cookies/sec  |  🖱️ ×${cookieCursors}  👵 ×${cookieGrandmas}`;
+
+      // Disable upgrade buttons when player can't afford them
+      document.getElementById('cursorBtn').disabled = cookieCount < cursorCost;
+      document.getElementById('grandmaBtn').disabled = cookieCount < grandmaCost;
+    }
+
+    function clickCookie(event) {
+      cookieCount++;
+      updateCookieUI();
+
+      // Spawn floating "+1" popup at cursor position
+      const popup = document.createElement('div');
+      popup.className = 'float-popup';
+      popup.innerText = '+1';
+      popup.style.left = (event.clientX - 10) + 'px';
+      popup.style.top  = (event.clientY - 10) + 'px';
+      document.body.appendChild(popup);
+      popup.addEventListener('animationend', () => popup.remove());
+    }
+
+    function buyCursor() {
+      if (cookieCount < cursorCost) return;
+      cookieCount -= cursorCost;
+      cookieCursors++;
+      cursorCost = Math.ceil(cursorCost * 1.15);
+      updateCookieUI();
+    }
+
+    function buyGrandma() {
+      if (cookieCount < grandmaCost) return;
+      cookieCount -= grandmaCost;
+      cookieGrandmas++;
+      grandmaCost = Math.ceil(grandmaCost * 1.15);
+      updateCookieUI();
+    }
+
+
+    // --- GAME 3: GALACTIC MEMORY ---
+    const icons = ['🚀', '🪐', '👽', '⭐', '🚀', '🪐', '👽', '⭐'];
+    let flippedCards = [], matchedPairs = 0;
+
+    function initMemoryGame() {
+      startCheerRoutine();
+      const grid = document.getElementById('memoryGrid');
+      grid.innerHTML = '';
+      flippedCards = [];
+      matchedPairs = 0;
+      document.getElementById('memoryScore').innerText = `Pairs Found: 0/4`;
+
+      let shuffled = [...icons].sort(() => Math.random() - 0.5);
+      shuffled.forEach((icon, idx) => {
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        card.dataset.icon = icon;
+        card.dataset.index = idx;
+        card.onclick = () => handleCardClick(card);
+        grid.appendChild(card);
+      });
+    }
+
+    function handleCardClick(card) {
+      if (flippedCards.length >= 2 || card.classList.contains('flipped')) return;
+
+      card.innerText = card.dataset.icon;
+      card.classList.add('flipped');
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        if (flippedCards[0].dataset.icon === flippedCards[1].dataset.icon) {
+          matchedPairs++;
+          document.getElementById('memoryScore').innerText = `Pairs Found: ${matchedPairs}/4`;
+          flippedCards = [];
+        } else {
+          setTimeout(() => {
+            flippedCards.forEach(c => {
+              c.innerText = '';
+              c.classList.remove('flipped');
+            });
+            flippedCards = [];
+          }, 700);
+        }
+      }
+    }
+
+    // --- GAME 4: GRAVITY BALANCE ---
+    const balanceCanvas = document.getElementById('balanceCanvas');
+    const ctx4 = balanceCanvas.getContext('2d');
+    let balanceX = 190, balanceVel = 0, balanceActive = false, balanceTime = 0, balanceTimer = null;
+
+    function startBalanceGame() {
+      startCheerRoutine();
+      balanceX = 190;
+      balanceVel = 0;
+      balanceTime = 0;
+      balanceActive = true;
+      clearInterval(balanceTimer);
+
+      balanceTimer = setInterval(() => {
+        if (!balanceActive) return;
+        balanceTime += 0.1;
+        document.getElementById('balanceScore').innerText = `Time Balanced: ${balanceTime.toFixed(1)}s`;
+      }, 100);
+
+      requestAnimationFrame(updateBalance);
+    }
+
+    function updateBalance() {
+      if (!balanceActive) return;
+      ctx4.clearRect(0, 0, balanceCanvas.width, balanceCanvas.height);
+
+      // Draw balance beam base
+      ctx4.strokeStyle = '#38bdf8';
+      ctx4.lineWidth = 4;
+      ctx4.beginPath();
+      ctx4.moveTo(40, 320);
+      ctx4.lineTo(340, 320);
+      ctx4.stroke();
+
+      // Apply random tilt force
+      balanceVel += (Math.random() - 0.5) * 0.6;
+      balanceX += balanceVel;
+
+      // Draw ball
+      ctx4.fillStyle = '#ef4444';
+      ctx4.beginPath();
+      ctx4.arc(balanceX, 305, 12, 0, Math.PI * 2);
+      ctx4.fill();
+
+      if (balanceX < 40 || balanceX > 340) {
+        balanceActive = false;
+        clearInterval(balanceTimer);
+        document.getElementById('balanceScore').innerText = `Fell Off! Final Time: ${balanceTime.toFixed(1)}s`;
+      } else {
+        requestAnimationFrame(updateBalance);
+      }
+    }
+
+    balanceCanvas.addEventListener('mousemove', (e) => {
+      if (!balanceActive) return;
+      const rect = balanceCanvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      balanceVel += (mouseX - balanceX) * 0.02;
+    });
+    // --- CHEER MESSAGE HELPER ---
+const cheerMessages = [
+  "🚀 Get Ready,lets f** this shii!",
+  "⚡ Lock In Nigga! You Got This!",
+  "🔥 Set a High Score! or else ur Gay",
+  "😎 Time to do some shii!",
+  "🎮 Nakkkn Game On!"
+];
+
+function showCheerMessage() {
+  const overlay = document.getElementById('cheerMsgOverlay');
+  if (!overlay) return;
+
+  const msg = cheerMessages[Math.floor(Math.random() * cheerMessages.length)];
+  overlay.innerText = msg;
+
+  overlay.style.display = 'block';
+  overlay.style.animation = 'none';
+  overlay.offsetHeight; // Force reflow
+  overlay.style.animation = 'cheerPop 2s ease-in-out forwards';
+
+  setTimeout(() => {
+    overlay.style.display = 'none';
+  }, 2000);
+}
+
+let cheerTimeouts = [];
+
+function startCheerRoutine() {
+  // Clear any existing cheer timeouts
+  cheerTimeouts.forEach(clearTimeout);
+  cheerTimeouts = [];
+
+  // Determine how many messages to show (2 or 3)
+  const numMessages = Math.floor(Math.random() * 2) + 2;
+
+  // Schedule them to pop during the game
+  for (let i = 0; i < numMessages; i++) {
+    // Space them out: first around 3-6s, second around 11-16s, third around 19-26s
+    const delay = 3000 + (i * 8000) + Math.random() * 3000;
+    const timeout = setTimeout(() => {
+      showCheerMessage();
+    }, delay);
+    cheerTimeouts.push(timeout);
+  }
+}
+
+// --- UPDATED GAME ROUTER ---
+function switchGame(gameId, title) {
+  document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('active'));
+  const targetPanel = document.getElementById(gameId);
+  if (targetPanel) targetPanel.classList.add('active');
+  
+  const titleEl = document.getElementById('gameTitle');
+  if (titleEl) titleEl.innerText = title;
+  
+  // Toggle sidebars visibility
+  const leftSidebar = document.getElementById('leftSidebar');
+  const rightSidebar = document.getElementById('rightSidebar');
+  if (gameId === 'game1') {
+    if (leftSidebar) leftSidebar.style.display = 'none';
+    if (rightSidebar) rightSidebar.style.display = 'none';
+  } else {
+    if (leftSidebar) leftSidebar.style.display = 'block';
+    if (rightSidebar) rightSidebar.style.display = 'block';
+  }
+
+  toggleModal('moreGamesModal');
+
+  if(gameId === 'game2' && typeof startClickerGame === 'function') startClickerGame();
+  if(gameId === 'game3' && typeof initMemoryGame === 'function') initMemoryGame();
+  if(gameId === 'game4' && typeof startBalanceGame === 'function') startBalanceGame();
+  if(gameId === 'game5') startSnakeGame();
+  if(gameId === 'game6') startHomiessGame();
+}
+
+// --- GAME 5: SPACE SNAKE ENGINE ---
+const snakeCanvas = document.getElementById('snakeCanvas');
+const ctxSnake = snakeCanvas ? snakeCanvas.getContext('2d') : null;
+let snake = [], snakeDir = { x: 20, y: 0 }, snakeFood = { x: 0, y: 0 }, snakeScore = 0, snakeLoop = null;
+
+function startSnakeGame() {
+  if (!ctxSnake) return;
+  startCheerRoutine();
+
+  snake = [{ x: 160, y: 160 }, { x: 140, y: 160 }, { x: 120, y: 160 }];
+  snakeDir = { x: 20, y: 0 };
+  snakeScore = 0;
+  spawnSnakeFood();
+  clearInterval(snakeLoop);
+  snakeLoop = setInterval(updateSnake, 120);
+}
+
+function spawnSnakeFood() {
+  snakeFood = {
+    x: Math.floor(Math.random() * 18) * 20,
+    y: Math.floor(Math.random() * 18) * 20
+  };
+}
+
+function updateSnake() {
+  const head = { x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y };
+
+  if (head.x < 0 || head.x >= 380 || head.y < 0 || head.y >= 380 || snake.some(p => p.x === head.x && p.y === head.y)) {
+    clearInterval(snakeLoop);
+    document.getElementById('snakeScore').innerText = `Game Over! Score: ${snakeScore}`;
+    return;
+  }
+
+  snake.unshift(head);
+
+  if (head.x === snakeFood.x && head.y === snakeFood.y) {
+    snakeScore += 10;
+    document.getElementById('snakeScore').innerText = `Score: ${snakeScore}`;
+    spawnSnakeFood();
+  } else {
+    snake.pop();
+  }
+
+  ctxSnake.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height);
+
+  // Food
+  ctxSnake.fillStyle = '#ef4444';
+  ctxSnake.shadowColor = '#ef4444';
+  ctxSnake.shadowBlur = 8;
+  ctxSnake.fillRect(snakeFood.x, snakeFood.y, 18, 18);
+
+  // Snake body
+  ctxSnake.fillStyle = '#38bdf8';
+  ctxSnake.shadowColor = '#38bdf8';
+  snake.forEach(part => ctxSnake.fillRect(part.x, part.y, 18, 18));
+  ctxSnake.shadowBlur = 0;
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowUp' && snakeDir.y === 0) snakeDir = { x: 0, y: -20 };
+  if (e.key === 'ArrowDown' && snakeDir.y === 0) snakeDir = { x: 0, y: 20 };
+  if (e.key === 'ArrowLeft' && snakeDir.x === 0) snakeDir = { x: -20, y: 0 };
+  if (e.key === 'ArrowRight' && snakeDir.x === 0) snakeDir = { x: 20, y: 0 };
+});
+
+// --- GAME 6: HOMIESS GAME ENGINE ---
+const hmsCanvas = document.getElementById('homiessCanvas');
+const ctxHms = hmsCanvas ? hmsCanvas.getContext('2d') : null;
+let hmsPlayer = { x: 180, y: 320, r: 18 }, hmsItems = [], hmsScore = 0, hmsActive = false, hmsAnim = null;
+let currentHomieName = "Sendil";
+
+function startHomiessGame() {
+  if (!ctxHms) return;
+  const nameSelect = document.getElementById('homieSelect');
+  currentHomieName = nameSelect ? nameSelect.value : "Homie";
+
+  startCheerRoutine();
+
+  hmsPlayer.x = 180;
+  hmsItems = [];
+  hmsScore = 0;
+  hmsActive = true;
+  
+  // Hide restart button when starting
+  document.getElementById('homiessRestartBtn').style.display = 'none';
+  
+  document.getElementById('homiessScore').innerText = `${currentHomieName}'s High-Fives: 0`;
+  cancelAnimationFrame(hmsAnim);
+  updateHomiessGame();
+}
+
+function updateHomiessGame() {
+  if (!hmsActive) return;
+  ctxHms.clearRect(0, 0, hmsCanvas.width, hmsCanvas.height);
+
+  // Spawn Items
+  if (Math.random() < 0.06) {
+    const isGood = Math.random() > 0.3;
+    hmsItems.push({
+      x: Math.random() * 340 + 20,
+      y: 0,
+      r: isGood ? 12 : 14,
+      isGood: isGood,
+      speed: Math.random() * 2 + 2
+    });
+  }
+
+  // Draw Player Avatar
+  ctxHms.fillStyle = '#818cf8';
+  ctxHms.shadowColor = '#818cf8';
+  ctxHms.shadowBlur = 10;
+  ctxHms.beginPath();
+  ctxHms.arc(hmsPlayer.x, hmsPlayer.y, hmsPlayer.r, 0, Math.PI * 2);
+  ctxHms.fill();
+  
+  ctxHms.fillStyle = '#ffffff';
+  ctxHms.font = '14px sans-serif';
+  ctxHms.textAlign = 'center';
+  ctxHms.fillText('🍌', hmsPlayer.x, hmsPlayer.y + 5);
+  ctxHms.shadowBlur = 0;
+
+  // Name Tag
+  ctxHms.fillStyle = '#38bdf8';
+  ctxHms.font = 'bold 12px Segoe UI, sans-serif';
+  ctxHms.fillText(currentHomieName, hmsPlayer.x, hmsPlayer.y - 25);
+
+  // Items Process
+  hmsItems.forEach((item, index) => {
+    item.y += item.speed;
+
+    ctxHms.font = '18px sans-serif';
+    if (item.isGood) {
+      ctxHms.fillStyle = '#4ade80';
+      ctxHms.fillText('🍑', item.x, item.y + 6);
+    } else {
+      ctxHms.fillStyle = '#ef4444';
+      ctxHms.fillText('🔪', item.x, item.y + 6);
+    }
+
+    const dist = Math.hypot(item.x - hmsPlayer.x, item.y - hmsPlayer.y);
+    if (dist < item.r + hmsPlayer.r) {
+      if (item.isGood) {
+        hmsScore += 10;
+        document.getElementById('homiessScore').innerText = `${currentHomieName}'s High-Fives: ${hmsScore}`;
+        hmsItems.splice(index, 1);
+      } else {
+        hmsActive = false;
+        document.getElementById('homiessScore').innerText = `Game Over ${currentHomieName}! Score: ${hmsScore}`;
+        // Show restart button
+        document.getElementById('homiessRestartBtn').style.display = 'block';
+      }
+    }
+
+    if (item.y > 400) hmsItems.splice(index, 1);
+  });
+
+  if (hmsActive) hmsAnim = requestAnimationFrame(updateHomiessGame);
+}
+
+if (hmsCanvas) {
+  hmsCanvas.addEventListener('mousemove', (e) => {
+    const rect = hmsCanvas.getBoundingClientRect();
+    hmsPlayer.x = Math.max(20, Math.min(360, e.clientX - rect.left));
+  });
+}
+  </script>
+</body>
+</html>
