@@ -96,7 +96,28 @@
   justify-content: space-between;
 }
 @media (max-width: 768px) {
+  body {
+    overflow-y: auto !important;
+    min-height: auto;
+  }
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 30px;
+  }
+  header {
+    order: 1;
+    width: 100%;
+    text-align: center;
+  }
+  main {
+    order: 2;
+    width: 100%;
+  }
   .sidebar {
+    order: 3;
     position: relative !important;
     top: auto !important;
     left: auto !important;
@@ -105,11 +126,12 @@
     margin: 10px auto;
     display: block !important;
   }
-  .app-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+  .moon-character-container {
+    order: 4;
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    margin: 10px auto;
   }
   .game-panel {
     width: 100%;
