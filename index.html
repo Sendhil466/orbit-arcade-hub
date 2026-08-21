@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Orbit: Arcade Hub</title>
   <link rel="preload" href="jumps.jpg" as="image">
   <style>
@@ -95,8 +95,26 @@
   display: flex;
   justify-content: space-between;
 }
-@media (max-width: 900px) {
-  .sidebar { display: none; }
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 90% !important;
+    margin: 10px auto;
+    display: block !important;
+  }
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .game-panel {
+    width: 100%;
+    padding: 0 10px;
+  }
 }
 #homeScareBtn {
   display: none;
@@ -298,6 +316,9 @@
       border-radius: 16px;
       cursor: crosshair;
       box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+      max-width: 100%;
+      height: auto;
+      touch-action: none;
     }
 
     #circleCanvas {
@@ -892,17 +913,25 @@ function closeJumpscare() {
     }
     drawCenterDot();
 
-    circleCanvas.addEventListener('mousedown', () => {
+    function getCirclePos(clientX, clientY) {
+      const rect = circleCanvas.getBoundingClientRect();
+      const scaleX = circleCanvas.width / rect.width;
+      const scaleY = circleCanvas.height / rect.height;
+      return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+
+    function startOrbitDraw(e) {
+      if(e.type === 'touchstart') e.preventDefault();
       isDrawing = true;
       points = [];
       ctx1.clearRect(0, 0, circleCanvas.width, circleCanvas.height);
       drawCenterDot();
-    });
+    }
 
-    circleCanvas.addEventListener('mousemove', (e) => {
+    function moveOrbitDraw(clientX, clientY, e) {
+      if (e && e.type === 'touchmove') e.preventDefault();
       if (!isDrawing) return;
-      const rect = circleCanvas.getBoundingClientRect();
-      const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      const pos = getCirclePos(clientX, clientY);
       points.push(pos);
 
       if (points.length > 1) {
@@ -916,9 +945,10 @@ function closeJumpscare() {
         ctx1.stroke();
         ctx1.shadowBlur = 0;
       }
-    });
+    }
 
-    circleCanvas.addEventListener('mouseup', () => {
+    function endOrbitDraw(e) {
+      if(e && e.type === 'touchend') e.preventDefault();
       if (!isDrawing) return;
       isDrawing = false;
       attempts++;
@@ -946,7 +976,17 @@ function closeJumpscare() {
       if (attempts >= 2 || accuracy >= 85) {
         setTimeout(executeMiracle, 400);
       }
-    });
+    }
+
+    circleCanvas.addEventListener('mousedown', startOrbitDraw);
+    circleCanvas.addEventListener('mousemove', (e) => moveOrbitDraw(e.clientX, e.clientY, e));
+    circleCanvas.addEventListener('mouseup', endOrbitDraw);
+    
+    circleCanvas.addEventListener('touchstart', startOrbitDraw, {passive: false});
+    circleCanvas.addEventListener('touchmove', (e) => {
+      moveOrbitDraw(e.touches[0].clientX, e.touches[0].clientY, e);
+    }, {passive: false});
+    circleCanvas.addEventListener('touchend', endOrbitDraw, {passive: false});
 
 
     // --- GAME 2: COOKIE CLICKER ---
@@ -1122,12 +1162,18 @@ function closeJumpscare() {
       }
     }
 
-    balanceCanvas.addEventListener('mousemove', (e) => {
+    function handleBalanceInput(clientX) {
       if (!balanceActive) return;
       const rect = balanceCanvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
+      const scaleX = balanceCanvas.width / rect.width;
+      const mouseX = (clientX - rect.left) * scaleX;
       balanceVel += (mouseX - balanceX) * 0.02;
-    });
+    }
+    balanceCanvas.addEventListener('mousemove', (e) => handleBalanceInput(e.clientX));
+    balanceCanvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      handleBalanceInput(e.touches[0].clientX);
+    }, {passive: false});
     // --- CHEER MESSAGE HELPER ---
 let cheerMessagesList = [
   "🚀 Get Ready,lets f** this shii!",
@@ -1271,6 +1317,32 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight' && snakeDir.x === 0) snakeDir = { x: 20, y: 0 };
 });
 
+if (snakeCanvas) {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  snakeCanvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive: false});
+
+  snakeCanvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+    
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 30 && snakeDir.x === 0) snakeDir = { x: 20, y: 0 };
+      else if (dx < -30 && snakeDir.x === 0) snakeDir = { x: -20, y: 0 };
+    } else {
+      if (dy > 30 && snakeDir.y === 0) snakeDir = { x: 0, y: 20 };
+      else if (dy < -30 && snakeDir.y === 0) snakeDir = { x: 0, y: -20 };
+    }
+  }, {passive: false});
+}
+
 // --- GAME 6: HOMIESS GAME ENGINE ---
 const hmsCanvas = document.getElementById('homiessCanvas');
 const ctxHms = hmsCanvas ? hmsCanvas.getContext('2d') : null;
@@ -1366,10 +1438,16 @@ function updateHomiessGame() {
 }
 
 if (hmsCanvas) {
-  hmsCanvas.addEventListener('mousemove', (e) => {
+  function updateHmsPlayer(clientX) {
     const rect = hmsCanvas.getBoundingClientRect();
-    hmsPlayer.x = Math.max(20, Math.min(360, e.clientX - rect.left));
-  });
+    const scaleX = hmsCanvas.width / rect.width;
+    hmsPlayer.x = Math.max(20, Math.min(360, (clientX - rect.left) * scaleX));
+  }
+  hmsCanvas.addEventListener('mousemove', (e) => updateHmsPlayer(e.clientX));
+  hmsCanvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    updateHmsPlayer(e.touches[0].clientX);
+  }, {passive: false});
 }
   </script>
 </body>
