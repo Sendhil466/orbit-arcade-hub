@@ -893,7 +893,6 @@ function closeJumpscare() {
     drawCenterDot();
 
     circleCanvas.addEventListener('mousedown', () => {
-      startCheerRoutine();
       isDrawing = true;
       points = [];
       ctx1.clearRect(0, 0, circleCanvas.width, circleCanvas.height);
@@ -959,7 +958,6 @@ function closeJumpscare() {
     let cookieAutoInterval = null;
 
     function startClickerGame() {
-      startCheerRoutine();
       // Reset state
       cookieCount = 0;
       cookieCursors = 0;
@@ -979,8 +977,6 @@ function closeJumpscare() {
           updateCookieUI();
         }
       }, 1000);
-
-      showCheerMessage("🍪 Bake All The Cookies!");
     }
 
     function updateCookieUI() {
@@ -1033,7 +1029,6 @@ function closeJumpscare() {
     let flippedCards = [], matchedPairs = 0;
 
     function initMemoryGame() {
-      startCheerRoutine();
       const grid = document.getElementById('memoryGrid');
       grid.innerHTML = '';
       flippedCards = [];
@@ -1081,7 +1076,6 @@ function closeJumpscare() {
     let balanceX = 190, balanceVel = 0, balanceActive = false, balanceTime = 0, balanceTimer = null;
 
     function startBalanceGame() {
-      startCheerRoutine();
       balanceX = 190;
       balanceVel = 0;
       balanceTime = 0;
@@ -1135,19 +1129,23 @@ function closeJumpscare() {
       balanceVel += (mouseX - balanceX) * 0.02;
     });
     // --- CHEER MESSAGE HELPER ---
-const cheerMessages = [
+let cheerMessagesList = [
   "🚀 Get Ready,lets f** this shii!",
   "⚡ Lock In Nigga! You Got This!",
   "🔥 Set a High Score! or else ur Gay",
   "😎 Time to do some shii!",
   "🎮 Nakkkn Game On!"
 ];
+cheerMessagesList.sort(() => Math.random() - 0.5);
+let cheersShown = 0;
 
 function showCheerMessage() {
   const overlay = document.getElementById('cheerMsgOverlay');
   if (!overlay) return;
 
-  const msg = cheerMessages[Math.floor(Math.random() * cheerMessages.length)];
+  if (cheersShown >= 3 || cheerMessagesList.length === 0) return;
+
+  const msg = cheerMessagesList.pop();
   overlay.innerText = msg;
 
   overlay.style.display = 'block';
@@ -1158,21 +1156,20 @@ function showCheerMessage() {
   setTimeout(() => {
     overlay.style.display = 'none';
   }, 2000);
+  
+  cheersShown++;
 }
 
 let cheerTimeouts = [];
 
 function startCheerRoutine() {
-  // Clear any existing cheer timeouts
   cheerTimeouts.forEach(clearTimeout);
   cheerTimeouts = [];
 
-  // Determine how many messages to show (2 or 3)
-  const numMessages = Math.floor(Math.random() * 2) + 2;
+  if (cheersShown >= 3) return;
 
-  // Schedule them to pop during the game
-  for (let i = 0; i < numMessages; i++) {
-    // Space them out: first around 3-6s, second around 11-16s, third around 19-26s
+  const remaining = 3 - cheersShown;
+  for (let i = 0; i < remaining; i++) {
     const delay = 3000 + (i * 8000) + Math.random() * 3000;
     const timeout = setTimeout(() => {
       showCheerMessage();
@@ -1217,7 +1214,6 @@ let snake = [], snakeDir = { x: 20, y: 0 }, snakeFood = { x: 0, y: 0 }, snakeSco
 
 function startSnakeGame() {
   if (!ctxSnake) return;
-  startCheerRoutine();
 
   snake = [{ x: 160, y: 160 }, { x: 140, y: 160 }, { x: 120, y: 160 }];
   snakeDir = { x: 20, y: 0 };
