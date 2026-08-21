@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Orbit: Arcade Hub</title>
+  <link rel="preload" href="jumps.jpg" as="image">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
@@ -813,18 +814,17 @@ function executeMiracle() {
 
   if (!snd || !overlay) return;
 
+  // Display overlay instantly to remove latency
+  overlay.style.display = 'block';
+
   snd.currentTime = 0;
   
-  // Trigger sound & show overlay
+  // Trigger sound & handle errors properly
   const playPromise = snd.play();
   if (playPromise !== undefined) {
-    playPromise.then(() => {
-      overlay.style.display = 'block';
-    }).catch(() => {
-      overlay.style.display = 'block';
+    playPromise.catch(error => {
+      console.warn("Jumpscare audio blocked or failed:", error);
     });
-  } else {
-    overlay.style.display = 'block';
   }
 
   // Reveal the "Stop Jumpscare" button after 2.5 seconds
